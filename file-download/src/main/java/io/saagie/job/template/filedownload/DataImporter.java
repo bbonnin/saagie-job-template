@@ -66,6 +66,12 @@ public class DataImporter {
     @Option(name = "--hive-table", usage = "Set Hive table to create (database.table)")
     private String hiveTable;
 
+    @Option(name = "--hive-user", usage = "Set Hive user")
+    private String hiveUser = "";
+
+    @Option(name = "--hive-pwd", usage = "Set Hive password")
+    private String hivePwd = "";
+
     @Option(name = "--hive-url", usage = "Set Hive JDBC url")
     private String hiveUrl = "jdbc:hive2://nn1:10000/;ssl=false";
 
@@ -85,7 +91,7 @@ public class DataImporter {
     private String sourceEscape = "\\";
 
     @Option(name = "--source-with-header", usage = "Set source with header (csv)")
-    private boolean sourceHasHeader = true;
+    private boolean sourceHasHeader = false;
 
     private HdfsClient hdfs;
 
@@ -123,7 +129,7 @@ public class DataImporter {
     }
 
     private void initSchemaLoader() {
-        schemaLoader = new SchemaLoader(hdfs, SchemaLoader.Fallback.LOCAL_ONLY);
+        schemaLoader = new SchemaLoader(hdfs, SchemaLoader.Fallback.LOCAL_IF_EXCEPTION);
     }
 
     private void run() throws ImportException, IOException {
@@ -161,13 +167,15 @@ public class DataImporter {
 
         // 4- If needed, create a hive table (use the schema if provided,
         //    otherwise use the first row for the field names and set the type to string)
-
         if (this.sourceFormat == Format.csv) {
             createHiveTable(schema);
         }
+
+        FileUtils.forceDelete(new File(tmpFileName));
     }
 
     private void copyInHdfs(String tmpFileName) throws IOException {
+        LOGGER.info("Copy in HDFS: from " + tmpFileName + " to " + this.destFileName);
         hdfs.write(tmpFileName, this.destFileName);
     }
 
@@ -178,10 +186,12 @@ public class DataImporter {
      */
     private void createHiveTable(Schema schema) {
 
+        LOGGER.info("Create Hive table: " + this.hiveTable);
+
         try {
             Class.forName(HIVE_DRIVER);
 
-            Connection conn = DriverManager.getConnection(this.hiveUrl, "", "");
+            Connection conn = DriverManager.getConnection(this.hiveUrl, this.hiveUser, this.hivePwd);
             Statement stmt = conn.createStatement();
 
             stmt.execute("DROP TABLE IF EXISTS " + this.hiveTable);
@@ -196,7 +206,7 @@ public class DataImporter {
                 }
                 buffer.replace(buffer.length() - 2, buffer.length(), ")\n");
             }
-            else if (this.sourceHasHeader){
+            else if (this.sourceHasHeader) {
                 // No schema: read first row (header) and each field will be a string
             }
             else {
@@ -215,10 +225,10 @@ public class DataImporter {
             stmt.execute(buffer.toString());
         }
         catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.severe("Problem when creating hive table: " + e.getMessage());
         }
         catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            LOGGER.severe("Problem with the driver: " + e.getMessage());
         }
     }
 
