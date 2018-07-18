@@ -1,0 +1,31 @@
+{
+    "namespace": "saagie",
+    "type": "record",
+    "name": "cross_operations",
+    "fields": [
+        { "name": "operation_id", "type": "long" },
+        { "name": "type_operation", "type": "string" },
+        { "name": "pourquoi_alerte", "type": "string" },
+        { "name": "moyen_alerte", "type": "string" },
+        { "name": "qui_alerte", "type": "string" },
+        { "name": "categorie_qui_alerte", "type": "string" },
+        { "name": "cross", "type": "string" },
+        { "name": "departement", "type": "string" },
+        { "name": "est_metropolitain", "type": "boolean" },
+        { "name": "evenement", "type": "string" },
+        { "name": "categorie_evenement", "type": "string" },
+        { "name": "autorite", "type": "string" },
+        { "name": "seconde_autorite", "type": "string" },
+        { "name": "zone_responsabilite", "type": "string" },
+        { "name": "latitude", "type": [ "float", "null" ] },
+        { "name": "longitude", "type": [ "float", "null" ] },
+        { "name": "vent_direction", "type": [ "int", "null" ] },
+        { "name": "vent_force", "type": [ "int", "null" ] },
+        { "name": "mer_force", "type": [ "int", "null" ] },
+        { "name": "date_heure_reception_alerte", "type": "string" },
+        { "name": "date_heure_fin_operation", "type": "string" },
+        { "name": "numero_sitrep", "type": [ "int", "null" ] },
+        { "name": "cross_sitrep", "type": "string" },
+        { "name": "fuseau_horaire", "type": "string" }
+    ]
+}
